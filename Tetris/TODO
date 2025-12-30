@@ -1,0 +1,8 @@
+BOARD:
+- hold piece (left)
+- next piece (right)
+
+Tetromino
+- delay for locking piece
+- rotations
+- bag
