@@ -38,34 +38,53 @@ public class Board extends JPanel {
     
     //keyboard inputs
     private void buttonInput(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_C) {
-            System.out.println("Hold (todo)");
+        if (e.getKeyCode() == KeyEvent.VK_C && !controller.isHoldingTetromino()) {
+
+            int currentPiece = controller.getCurrentTetrominoShape();
+            int heldPiece = controller.getHeldTetromino();
+            controller.setHeldTetromino(currentPiece);
+            
+            if (heldPiece != -1){
+                controller.spawnNewTetromino(heldPiece);
+            } else {
+                controller.spawnNewTetromino(bag.getNext());
+            }
+
+            controller.setHoldingTetromino(true); // can be turned false in lockTetromino()
         }
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            if (controller.canMove(controller.getPieceX() - 1, controller.getPieceY())) {
+            if (controller.canMove(controller.getPieceX() - 1, controller.getPieceY(), controller.getCurrentPieceShape())) {
                 controller.setPieceX(controller.getPieceX() - 1);
             }
         }
         if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            if (controller.canMove(controller.getPieceX() + 1, controller.getPieceY())) {
+            if (controller.canMove(controller.getPieceX() + 1, controller.getPieceY(), controller.getCurrentPieceShape())) {
                 controller.setPieceX(controller.getPieceX() + 1);
             }
         }
         if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            if (controller.canMove(controller.getPieceX(), controller.getPieceY() + 1)) {
+            if (controller.canMove(controller.getPieceX(), controller.getPieceY() + 1, controller.getCurrentPieceShape())) {
                 controller.setPieceY(controller.getPieceY() + 1);
             } else {
                 controller.lockTetromino();
                 controller.spawnNewTetromino(bag.getNext());
+                controller.clearLines();
             }
         }
         if (e.getKeyCode() == KeyEvent.VK_UP) {
-            System.out.println("Rotate (todo)");
+            controller.rotateTetromino((controller.getCurrentRotation()+1)%4); // %4 so when it is 3 and adds 1 to make 4, it loops back to 0
+        }
+        if (e.isControlDown()){
+            controller.rotateTetromino((controller.getCurrentRotation()+3)%4);
+        }
+        if (e.getKeyCode() == KeyEvent.VK_SHIFT){
+            controller.rotateTetromino((controller.getCurrentRotation()+2)%4);
         }
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             controller.hardDrop();
             controller.lockTetromino();
             controller.spawnNewTetromino(bag.getNext());
+            controller.clearLines();
         }
     }
     
