@@ -7,9 +7,9 @@ import java.awt.event.*;
 public class Board extends JPanel {
     private final int columns = 10;
     private final int visibleRows = 20;
-    private final int invisibleRows = 3;
+    private final int invisibleRows = 3; // invis rows on the top of the board; implement clutch?
     private final int totalRows = visibleRows + invisibleRows;
-    private final int blockSize = 55;
+    private final int blockSize = 55; 
     private final int startRow = 0;
     private final int startCol = 3;
     
@@ -30,13 +30,14 @@ public class Board extends JPanel {
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                handleKeyPress(e);
+                buttonInput(e);
                 repaint();
             }
         });
     }
     
-    private void handleKeyPress(KeyEvent e) {
+    //keyboard inputs
+    private void buttonInput(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_C) {
             System.out.println("Hold (todo)");
         }
@@ -70,6 +71,7 @@ public class Board extends JPanel {
     
     @Override 
     protected void paintComponent(Graphics g) {
+        //clear board
         super.paintComponent(g);
         
         renderer.calculateBoardPosition(getWidth(), getHeight());

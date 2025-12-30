@@ -43,6 +43,7 @@ public class GameController {
         return true;
     }
     
+    //puts the tetromino data into grid
     public void lockTetromino() {
         for (int row = 0; row < 4; row++) {
             for (int col = 0; col < 4; col++) {
@@ -69,7 +70,7 @@ public class GameController {
         setCurrentPiece(nextShape, 0);
     }
     
-    // Getters
+    // getters
     public int getPieceX() { return pieceX; }
     public int getPieceY() { return pieceY; }
     public int getCurrentTetrominoShape() { return currentTetrominoShape; }
@@ -77,7 +78,7 @@ public class GameController {
     public int getCurrentRotation() { return currentRotation; }
     public int[][] getGrid() { return grid; }
     
-    // Setters
+    // setters
     public void setPieceX(int x) { pieceX = x; }
     public void setPieceY(int y) { pieceY = y; }
 }
