@@ -1,11 +1,13 @@
 BOARD:
 - hold piece (left)
 - next piece (right)
+- should just chage drawCurrentTetromino into drawTetromino and change the setcolor, todo later (boardrenderer)
 
 Tetromino
 - delay for locking piece
-- rotations
-- bag
 - wall kick
+- make hold fit (and probably next too)
+    - center hold and next pieces; good enough for now tho
+
 
 idk what to put here hehe

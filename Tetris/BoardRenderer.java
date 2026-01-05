@@ -17,8 +17,16 @@ public class BoardRenderer {
     private final int holdHeight;
     private final int nextWidth;
     private final int nextHeight;
+    private final Color borderColor = Color.GRAY; // maybe magenta idrk
+    private final Color gridGray = Color.GRAY.darker().darker();
+    private final Color ghostColor = Color.WHITE;
+    private final int borderThickness = 20;
+    private TetrominoBag bag;
+    private int numberOfNext = 5;
+
+    private GameController controller;
     
-    public BoardRenderer(int columns, int visibleRows, int invisibleRows, int blockSize, int holdWidth, int holdHeight, int nextWidth, int nextHeight) {
+    public BoardRenderer(int columns, int visibleRows, int invisibleRows, int blockSize, int holdWidth, int holdHeight, int nextWidth, int nextHeight, TetrominoBag bag, GameController controller) {
         this.columns = columns;
         this.visibleRows = visibleRows;
         this.invisibleRows = invisibleRows;
@@ -30,6 +38,8 @@ public class BoardRenderer {
         this.holdHeight = holdHeight;
         this.nextWidth = nextWidth;
         this.nextHeight = nextHeight;
+        this.bag = bag;
+        this.controller = controller;
     }
     
     // x and y poses for top left of the board, respective to the window dimensions.
@@ -43,12 +53,41 @@ public class BoardRenderer {
     }
     
     public void generateBoard(Graphics g) {
+
+        //draws the borders
+
+        int visibleAreaY = boardY + (invisibleRows * blockSize);
+        int borderLeftX = boardX - borderThickness;
+        int borderLeftY = visibleAreaY;
+        int borderLeftWidth = borderThickness;
+        int borderLeftHeight = visibleRows * blockSize + borderThickness;
+
+        g.setColor(borderColor);
+        g.fillRect(borderLeftX, borderLeftY, borderLeftWidth, borderLeftHeight);
+
+        int borderRightX = boardX + columns * blockSize;
+        int borderRightY = visibleAreaY;
+        int borderRightWidth = borderThickness;
+        int borderRightHeight = visibleRows * blockSize + borderThickness;
+
+        g.setColor(borderColor);
+        g.fillRect(borderRightX, borderRightY, borderLeftWidth, borderLeftHeight);
+
+        int borderBottomX = boardX - borderThickness;
+        int borderBottomY = visibleAreaY + visibleRows * blockSize;
+        int borderBottomWidth = columns * blockSize + borderThickness;
+        int borderBottomHeight = borderThickness;
+        
+        g.setColor(borderColor);
+        g.fillRect(borderBottomX, borderBottomY, borderBottomWidth, borderBottomHeight);
+
+        //draws the grid
         for (int row = 0; row < visibleRows; row++) {
             for (int col = 0; col < columns; col++) {
                 int gridRow = row + invisibleRows;
                 int x = boardX + col * blockSize;
                 int y = boardY + gridRow * blockSize;
-                g.setColor(Color.GRAY);
+                g.setColor(gridGray);
                 g.drawRect(x, y, blockSize, blockSize);
             }
         }
@@ -58,9 +97,9 @@ public class BoardRenderer {
     public void generateHoldBar(Graphics g){
         for (int row = 0; row < holdHeight; row++){
             for (int col = 0; col < holdWidth; col++){
-                int x = holdX + col * blockSize;
+                int x = holdX + col * blockSize - borderThickness; // account for border of the grid
                 int y = holdY + row * blockSize;
-                g.setColor(Color.GRAY);
+                g.setColor(gridGray);
                 g.drawRect(x, y, blockSize, blockSize);
             }
         }
@@ -74,7 +113,7 @@ public class BoardRenderer {
                 if (currentPieceShape[row][col] != 0){
                     int heldGridX = col + 1;
                     int heldGridY = row + 1;
-                    int x = holdX + heldGridX * blockSize;
+                    int x = holdX + heldGridX * blockSize - borderThickness;
                     int y = holdY + heldGridY * blockSize;
                     g.setColor(Tetromino.TetrominoColors[currentTetrominoShape+1]);
                     g.fillRect(x, y, blockSize, blockSize);
@@ -87,12 +126,32 @@ public class BoardRenderer {
     public void generateNextBar(Graphics g){
         for (int row = 0; row < nextHeight; row++){
             for (int col = 0; col < nextWidth; col++){
-                int x = nextX + col * blockSize;
+                int x = nextX + col * blockSize + borderThickness; // account for border of the grid
                 int y = nextY + row * blockSize;
-                g.setColor(Color.GRAY);
+                g.setColor(gridGray);
                 g.drawRect(x, y, blockSize, blockSize);
             }
         }       
+    }
+
+    public void drawNextPieces(Graphics g){
+        int[] nextPieces = bag.peekNextn(numberOfNext);
+        
+        for (int i = 0; i < numberOfNext; i++){
+            int[][] nextI = Tetromino.getShape(nextPieces[i], 0);
+            for (int row = 0; row < 4; row++){
+                for (int col = 0; col < 4; col++){
+                    if (nextI[row][col] != 0){
+                        int nextGridX = col + 1;
+                        int nextGridY = row;
+                        int x = nextX + nextGridX * blockSize + borderThickness;
+                        int y = nextY + nextGridY * blockSize + (i * 3 * blockSize);
+                        g.setColor(Tetromino.TetrominoColors[nextPieces[i]+1]);
+                        g.fillRect(x, y, blockSize, blockSize);
+                    }
+                }
+            }
+        }
     }
 
     public void drawCurrentTetromino(Graphics g, int pieceX, int pieceY, 
@@ -109,6 +168,33 @@ public class BoardRenderer {
                 }
             }   
         }
+    }
+    
+    public void previewHardDroppedPiece(Graphics g, int pieceX, int pieceY, int currentTetrominoShape, int[][] currentPieceShape){
+        int ghostPieceShape[][] = currentPieceShape;
+        int ghostPieceX = pieceX;
+        int ghostPieceY = pieceY;
+
+        while (controller.canMove(ghostPieceX, ghostPieceY + 1, ghostPieceShape)) {
+            ghostPieceY++;
+        }
+
+        // should just chage drawCurrentTetromino into drawTetromino and change the setcolor, todo later
+
+        for (int row = 0; row < 4; row++) {
+            for (int col = 0; col < 4; col++) {
+                if (currentPieceShape[row][col] != 0) {
+                    int gridX = pieceX + col;  
+                    int gridY = ghostPieceY + row; 
+                    int x = boardX + gridX * blockSize;
+                    int y = boardY + gridY * blockSize;  
+
+                    g.setColor(ghostColor);
+                    g.drawRect(x, y, blockSize, blockSize);
+                }
+            }   
+        }
+
     }
     
     //for repaint() / paintcomponent and maybe other things

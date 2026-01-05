@@ -22,9 +22,9 @@ public class Board extends JPanel {
     private GameController controller;
     
     public Board() {
-        renderer = new BoardRenderer(columns, visibleRows, invisibleRows, blockSize, holdWidth, holdHeight, nextWidth, nextHeight);
-        controller = new GameController(columns, totalRows, startCol, startRow);
         bag = new TetrominoBag();
+        controller = new GameController(columns, totalRows, startCol, startRow);
+        renderer = new BoardRenderer(columns, visibleRows, invisibleRows, blockSize, holdWidth, holdHeight, nextWidth, nextHeight, bag, controller);
         
         controller.setCurrentPiece(bag.getNext(), 0);
         
@@ -105,7 +105,11 @@ public class Board extends JPanel {
                                 Tetromino.getShape(controller.getHeldTetromino(), 0));
         }
         renderer.generateNextBar(g);
+        renderer.drawNextPieces(g);
         renderer.redrawGrid(g, controller.getGrid());
+        renderer.previewHardDroppedPiece(g, controller.getPieceX(), controller.getPieceY(), 
+                                        controller.getCurrentTetrominoShape(), 
+                                        controller.getCurrentPieceShape());
         renderer.drawCurrentTetromino(g, controller.getPieceX(), controller.getPieceY(), 
                                      controller.getCurrentTetrominoShape(), 
                                      controller.getCurrentPieceShape());
