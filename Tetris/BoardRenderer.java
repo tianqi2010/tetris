@@ -112,7 +112,7 @@ public class BoardRenderer {
             for (int col = 0; col < 4; col++){
                 if (currentPieceShape[row][col] != 0){
                     int heldGridX = col + 1;
-                    int heldGridY = row + 1;
+                    int heldGridY = row;
                     int x = holdX + heldGridX * blockSize - borderThickness;
                     int y = holdY + heldGridY * blockSize;
                     g.setColor(Tetromino.TetrominoColors[currentTetrominoShape+1]);

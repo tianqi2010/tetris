@@ -81,10 +81,23 @@ public class GameController {
         if (canMove(getPieceX(), getPieceY(), newRotatedShape)){
             currentPieceShape = newRotatedShape;
             currentRotation = targetRotation;
-        }
-        
+        } else { // wall kick test
+            if (currentTetrominoShape != 3){
+                int[][] wallKicks = WallKickData.getWallKickData(currentRotation, targetRotation, currentTetrominoShape);
+                for (int i = 0; i < WallKickData.numberOfTests; i++){
+                    int newKickX = getPieceX() + wallKicks[i][0];
+                    int newKickY = getPieceY() + wallKicks[i][1];
 
-        // wall kick will be implemented later
+                    if (canMove(newKickX, newKickY, newRotatedShape)){
+                        setPieceX(newKickX);
+                        setPieceY(newKickY);
+                        currentPieceShape = newRotatedShape;
+                        currentRotation = targetRotation;
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     public void clearLines(){

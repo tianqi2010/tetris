@@ -2,6 +2,7 @@ BOARD:
 - hold piece (left)
 - next piece (right)
 - should just chage drawCurrentTetromino into drawTetromino and change the setcolor, todo later (boardrenderer)
+- way to lose
 
 Tetromino
 - delay for locking piece
