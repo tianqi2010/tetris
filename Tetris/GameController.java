@@ -1,5 +1,8 @@
 package Tetris;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class GameController {
     private int pieceX, pieceY;
     private int currentTetrominoShape;
@@ -12,8 +15,13 @@ public class GameController {
     private final int startRow;
     private final int columns;
     private final int totalRows;
-    
+    private final Timer timer = new Timer();
+    private final TimerTask task;
+    public int delay = 1000; // milliseconds
+    private TetrominoBag bag;
+
     public GameController(int columns, int totalRows, int startCol, int startRow) {
+        bag = new TetrominoBag();
         this.columns = columns;
         this.totalRows = totalRows;
         this.startCol = startCol;
@@ -21,6 +29,25 @@ public class GameController {
         this.grid = new int[totalRows][columns];
         this.pieceX = startCol;
         this.pieceY = startRow;
+        task = new TimerTask() {
+            @Override  
+            public void run(){
+                try{
+                System.out.println("working");
+                if (canMove(getPieceX(), getPieceY() + 1, getCurrentPieceShape())) {
+                    setPieceY(getPieceY() + 1);
+                } else {
+                    lockTetromino();
+                    spawnNewTetromino(bag.getNext());
+                    clearLines();
+                }
+                // repaint();
+            } catch(Exception e){
+                e.printStackTrace();
+            }
+            }
+        };
+        timer.schedule(task, delay, delay);
     }
     
     public void setCurrentPiece(int tetrominoShape, int rotation) {
@@ -100,6 +127,13 @@ public class GameController {
         }
     }
 
+    // not working dont know why
+    // public void newTetromino(){
+    //     lockTetromino();
+    //     spawnNewTetromino(bag.getNext());
+    //     clearLines();
+    // }
+
     public void clearLines(){
         int linesCleared = 0;
         int currentRow = totalRows - 1;
@@ -134,7 +168,7 @@ public class GameController {
             }
         }
     }
-    
+
     // getters
     public int getPieceX() { return pieceX; }
     public int getPieceY() { return pieceY; }

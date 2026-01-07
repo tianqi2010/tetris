@@ -17,7 +17,7 @@ public class Board extends JPanel {
     private final int nextWidth = 6;
     private final int nextHeight = 16;
     
-    private TetrominoBag bag;
+    public TetrominoBag bag;
     private BoardRenderer renderer;
     private GameController controller;
     

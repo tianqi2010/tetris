@@ -21,7 +21,7 @@ public class BoardRenderer {
     private final Color gridGray = Color.GRAY.darker().darker();
     private final Color ghostColor = Color.WHITE;
     private final int borderThickness = 20;
-    private TetrominoBag bag;
+    public TetrominoBag bag;
     private int numberOfNext = 5;
 
     private GameController controller;
