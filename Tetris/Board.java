@@ -23,7 +23,7 @@ public class Board extends JPanel {
     
     public Board() {
         bag = new TetrominoBag();
-        controller = new GameController(columns, totalRows, startCol, startRow);
+        controller = new GameController(columns, totalRows, startCol, startRow, this, bag);
         renderer = new BoardRenderer(columns, visibleRows, invisibleRows, blockSize, holdWidth, holdHeight, nextWidth, nextHeight, bag, controller);
         
         controller.setCurrentPiece(bag.getNext(), 0);
@@ -70,9 +70,7 @@ public class Board extends JPanel {
             if (controller.canMove(controller.getPieceX(), controller.getPieceY() + 1, controller.getCurrentPieceShape())) {
                 controller.setPieceY(controller.getPieceY() + 1);
             } else {
-                controller.lockTetromino();
-                controller.spawnNewTetromino(bag.getNext());
-                controller.clearLines();
+                controller.newTetromino();
             }
         }
         if (e.getKeyCode() == KeyEvent.VK_UP) {
@@ -86,9 +84,7 @@ public class Board extends JPanel {
         }
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             controller.hardDrop();
-            controller.lockTetromino();
-            controller.spawnNewTetromino(bag.getNext());
-            controller.clearLines();
+            controller.newTetromino();
         }
     }
     

@@ -18,10 +18,12 @@ public class GameController {
     private final Timer timer = new Timer();
     private final TimerTask task;
     public int delay = 1000; // milliseconds
-    private TetrominoBag bag;
 
-    public GameController(int columns, int totalRows, int startCol, int startRow) {
-        bag = new TetrominoBag();
+    private TetrominoBag bag;
+    private Board board;
+
+    public GameController(int columns, int totalRows, int startCol, int startRow, Board board, TetrominoBag bag) {
+
         this.columns = columns;
         this.totalRows = totalRows;
         this.startCol = startCol;
@@ -29,6 +31,9 @@ public class GameController {
         this.grid = new int[totalRows][columns];
         this.pieceX = startCol;
         this.pieceY = startRow;
+        this.board = board;
+        this.bag = bag;
+        
         task = new TimerTask() {
             @Override  
             public void run(){
@@ -37,14 +42,12 @@ public class GameController {
                 if (canMove(getPieceX(), getPieceY() + 1, getCurrentPieceShape())) {
                     setPieceY(getPieceY() + 1);
                 } else {
-                    lockTetromino();
-                    spawnNewTetromino(bag.getNext());
-                    clearLines();
+                    newTetromino();
                 }
-                // repaint();
-            } catch(Exception e){
+                board.repaint();
+                } catch(Exception e){
                 e.printStackTrace();
-            }
+                }
             }
         };
         timer.schedule(task, delay, delay);
@@ -127,12 +130,11 @@ public class GameController {
         }
     }
 
-    // not working dont know why
-    // public void newTetromino(){
-    //     lockTetromino();
-    //     spawnNewTetromino(bag.getNext());
-    //     clearLines();
-    // }
+    public void newTetromino(){
+        lockTetromino();
+        spawnNewTetromino(bag.getNext());
+        clearLines();
+    }
 
     public void clearLines(){
         int linesCleared = 0;

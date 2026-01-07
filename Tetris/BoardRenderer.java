@@ -23,7 +23,7 @@ public class BoardRenderer {
     private final int borderThickness = 20;
     public TetrominoBag bag;
     private int numberOfNext = 5;
-
+    
     private GameController controller;
     
     public BoardRenderer(int columns, int visibleRows, int invisibleRows, int blockSize, int holdWidth, int holdHeight, int nextWidth, int nextHeight, TetrominoBag bag, GameController controller) {
