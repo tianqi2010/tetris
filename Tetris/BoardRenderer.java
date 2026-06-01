@@ -6,9 +6,9 @@ public class BoardRenderer {
     private int boardX, boardY;
     private int holdX, holdY;
     private int nextX, nextY;
-    private final int boardWidth;
-    private final int boardHeight;
-    private final int blockSize;
+    private int boardWidth;
+    private int boardHeight;
+    private int blockSize;
     private final int columns;
     private final int visibleRows;
     private final int invisibleRows; 
@@ -115,7 +115,7 @@ public class BoardRenderer {
                     int heldGridY = row;
                     int x = holdX + heldGridX * blockSize - borderThickness;
                     int y = holdY + heldGridY * blockSize;
-                    g.setColor(Tetromino.TetrominoColors[currentTetrominoShape+1]);
+                    g.setColor(Tetromino.TetrominoColors[currentTetrominoShape]);
                     g.fillRect(x, y, blockSize, blockSize);
                 }
             }
@@ -146,7 +146,7 @@ public class BoardRenderer {
                         int nextGridY = row;
                         int x = nextX + nextGridX * blockSize + borderThickness;
                         int y = nextY + nextGridY * blockSize + (i * 3 * blockSize);
-                        g.setColor(Tetromino.TetrominoColors[nextPieces[i]+1]);
+                        g.setColor(Tetromino.TetrominoColors[nextPieces[i]]);
                         g.fillRect(x, y, blockSize, blockSize);
                     }
                 }
@@ -163,7 +163,7 @@ public class BoardRenderer {
                     int gridY = pieceY + row; 
                     int x = boardX + gridX * blockSize;
                     int y = boardY + gridY * blockSize;  
-                    g.setColor(Tetromino.TetrominoColors[currentTetrominoShape+1]);
+                    g.setColor(Tetromino.TetrominoColors[currentTetrominoShape]);
                     g.fillRect(x, y, blockSize, blockSize);
                 }
             }   
@@ -204,10 +204,69 @@ public class BoardRenderer {
                 if (grid[row][col] != 0) {
                     int x = boardX + col * blockSize;
                     int y = boardY + row * blockSize; 
-                    g.setColor(Tetromino.TetrominoColors[grid[row][col]]);
+                    g.setColor(Tetromino.TetrominoColors[grid[row][col]-1]);
                     g.fillRect(x, y, blockSize, blockSize);
                 }
             }   
         }
+    }
+
+    public void displayText(Graphics g, String text, Color color){
+        g.setColor(color);
+        g.setFont(new Font("Montserrat", Font.BOLD, 50));
+
+        int textX = holdX;
+        int textY = holdY + (holdHeight * blockSize) + 150;
+
+        g.drawString(text, textX, textY);
+    }
+
+    public void displayScore(Graphics g, int score){
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Montserrat", Font.BOLD, 50));
+
+        int textX = holdX;
+        int textY = holdY + (holdHeight * blockSize) + 250;
+
+        g.drawString("Score", textX, textY);
+        g.drawString(String.valueOf(score), textX, textY + 60); 
+    }
+
+    public void displayLevels(Graphics g, int levels){
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Montserrat", Font.BOLD, 50));
+    
+        int textX = holdX;
+        int textY = holdY + (holdHeight * blockSize) + 350;
+    
+        g.drawString("Level", textX, textY);
+        g.drawString(String.valueOf(levels), textX, textY + 60);
+    }
+    
+    public void displayLines(Graphics g, int lines){
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 50));
+    
+        int textX = holdX;
+        int textY = holdY + (holdHeight * blockSize) + 450; 
+    
+        g.drawString("Lines", textX, textY);
+        g.drawString(String.valueOf(lines), textX, textY + 60);
+    }
+
+    public Color textToColor(int number, boolean isSpin){
+        if (!isSpin){
+            return Color.WHITE;
+        }
+        if (number == -1 || number == 0){
+            return Color.BLACK;
+        }
+        return Tetromino.TetrominoColors[number];
+    }
+    
+    public void updateBlockSize(int newBlockSize) {
+        this.blockSize = newBlockSize;
+        this.boardWidth = columns * blockSize;
+        this.boardHeight = totalRows * blockSize;
     }
 }

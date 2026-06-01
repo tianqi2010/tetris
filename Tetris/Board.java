@@ -9,7 +9,7 @@ public class Board extends JPanel {
     private final int visibleRows = 20;
     private final int invisibleRows = 3; // invis rows on the top of the board; implement clutch?
     private final int totalRows = visibleRows + invisibleRows;
-    private final int blockSize = 55; 
+    private int blockSize = 55; 
     private final int startRow = 0;
     private final int startCol = 3;
     private final int holdWidth = 6;
@@ -20,8 +20,10 @@ public class Board extends JPanel {
     public TetrominoBag bag;
     private BoardRenderer renderer;
     private GameController controller;
+    private Tetris tetris;
     
-    public Board() {
+    public Board(Tetris tetris) {
+        this.tetris = tetris;
         bag = new TetrominoBag();
         controller = new GameController(columns, totalRows, startCol, startRow, this, bag);
         renderer = new BoardRenderer(columns, visibleRows, invisibleRows, blockSize, holdWidth, holdHeight, nextWidth, nextHeight, bag, controller);
@@ -37,6 +39,14 @@ public class Board extends JPanel {
                 buttonInput(e);
                 repaint();
             }
+        });
+
+        addComponentListener(new ComponentAdapter() {
+        @Override
+        public void componentResized(ComponentEvent e) {
+            adjustBlockSize();
+            repaint();
+        }
         });
     }
     
@@ -70,7 +80,8 @@ public class Board extends JPanel {
             if (controller.canMove(controller.getPieceX(), controller.getPieceY() + 1, controller.getCurrentPieceShape())) {
                 controller.setPieceY(controller.getPieceY() + 1);
             } else {
-                controller.newTetromino();
+                // controller.newTetromino();
+                
             }
         }
         if (e.getKeyCode() == KeyEvent.VK_UP) {
@@ -85,9 +96,29 @@ public class Board extends JPanel {
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             controller.hardDrop();
             controller.newTetromino();
+            controller.isLocked = false; 
         }
     }
-    
+
+    private void adjustBlockSize(){
+        int availableW = getWidth() - 250;
+        int availableH = getHeight() - 50;
+        int maxWidth = availableW / (columns+12);
+        int maxHeight = availableH / totalRows;
+
+        int newSize = Math.min(maxWidth, maxHeight);
+        renderer.updateBlockSize(newSize);
+    }
+
+    public void restart() {
+        controller.resetGame();
+        repaint();
+    }
+
+    public void showGameOver() {
+        tetris.showGameOver();
+    }
+  
     @Override 
     protected void paintComponent(Graphics g) {
         //clear board
@@ -97,7 +128,7 @@ public class Board extends JPanel {
         renderer.generateBoard(g);
         renderer.generateHoldBar(g);
         if (controller.getHeldTetromino() != -1){
-        renderer.drawHeldPiece(g, controller.getHeldTetromino(), 
+            renderer.drawHeldPiece(g, controller.getHeldTetromino(), 
                                 Tetromino.getShape(controller.getHeldTetromino(), 0));
         }
         renderer.generateNextBar(g);
@@ -109,5 +140,12 @@ public class Board extends JPanel {
         renderer.drawCurrentTetromino(g, controller.getPieceX(), controller.getPieceY(), 
                                      controller.getCurrentTetrominoShape(), 
                                      controller.getCurrentPieceShape());
+        if (!controller.linesClearedText.equals(" ")){
+            renderer.displayText(g, controller.linesClearedText, renderer.textToColor(controller.getPreviousHeldTetromino(), controller.isSpin));
+        }
+        renderer.displayScore(g, controller.score);
+        renderer.displayLevels(g, (int)(controller.totalLinesCleared/10));
+        renderer.displayLines(g, controller.totalLinesCleared);
+
     }
 }

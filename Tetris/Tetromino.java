@@ -167,15 +167,15 @@ public class Tetromino {
     }
     };
 
-    public static final Color[] TetrominoColors = {
-        new Color(128, 128, 128),  // no piece (gray) - #808080
+    public final static Color[] TetrominoColors = {
         new Color(0, 255, 255),    // I-piece (cyan) - #00FFFF
         new Color(0, 0, 255),      // J-piece (blue) - #0000FF
         new Color(255, 140, 0),    // L-piece (dark orange) - #FF8C00
         new Color(255, 255, 0),    // O-piece (yellow) - #FFFF00
         new Color(0, 255, 0),      // S-piece (green) - #00FF00
         new Color(255, 0, 255),    // T-piece (magenta) - #FF00FF
-        new Color(255, 0, 0)       // Z-piece (red) - #FF0000
+        new Color(255, 0, 0),       // Z-piece (red) - #FF0000
+        new Color(128, 128, 128),  // no piece (gray) - #808080
     };
 
     public static int[][] getShape(int type, int rotation){

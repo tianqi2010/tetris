@@ -9,18 +9,28 @@ public class GameController {
     private int[][] currentPieceShape;
     private int currentRotation;
     private int[][] grid;
+    public int previousHeldTeromino = -1;
     public int heldTetromino = -1;
     public boolean holdingTetromino = false;
     private final int startCol;
     private final int startRow;
     private final int columns;
     private final int totalRows;
-    private final Timer timer = new Timer();
-    private final TimerTask task;
-    public int delay = 1000; // milliseconds
+    private Timer timer = new Timer();
+    private TimerTask task;
+    public int delay = 1000; // milliseconds, gravity and soft drop
+    public final int LOCK_DELAY = 500;
+    public boolean isLocked = false;
+    public double lockTime = 0;
+    public int score = 0;
+    public int totalLinesCleared = 0;
 
     private TetrominoBag bag;
     private Board board;
+
+    private boolean isLost = false;
+    public boolean isSpin = false;
+    String linesClearedText = " ";
 
     public GameController(int columns, int totalRows, int startCol, int startRow, Board board, TetrominoBag bag) {
 
@@ -33,25 +43,50 @@ public class GameController {
         this.pieceY = startRow;
         this.board = board;
         this.bag = bag;
-        
-        task = new TimerTask() {
+        startGameLoop();
+    }
+    private void startGameLoop() {
+        if (timer != null) {
+            timer.cancel();
+        }
+
+        Timer newTimer = new Timer();
+
+
+        TimerTask task = new TimerTask() {
             @Override  
             public void run(){
                 try{
-                System.out.println("working");
-                if (canMove(getPieceX(), getPieceY() + 1, getCurrentPieceShape())) {
-                    setPieceY(getPieceY() + 1);
-                } else {
-                    newTetromino();
+                if (isLocked) {
+                    if (System.currentTimeMillis() - lockTime >= LOCK_DELAY){
+                        lockTetromino();
+                        spawnNewTetromino(bag.getNext());
+                        clearLines();
+                        isLocked = false;
+                    }
+                }
+                else {
+                    if (canMove(getPieceX(), getPieceY() + 1, getCurrentPieceShape())){
+                        setPieceY(getPieceY() + 1);
+                    } else {
+                        isLocked = true;
+                        lockTime = System.currentTimeMillis();
+                    }
                 }
                 board.repaint();
                 } catch(Exception e){
-                e.printStackTrace();
+                    e.printStackTrace();
                 }
             }
         };
-        timer.schedule(task, delay, delay);
-    }
+        newTimer.schedule(task, delay, delay);
+    }      
+    private int getDelayFromLevel(int level) {
+    // Exponential speed increase
+    // Base speed: 500ms at level 0
+        double speed = 500.0 / Math.pow(1.2, level);
+        return Math.max(16, (int) speed); // Cap at ~1 frame minimum
+    }   
     
     public void setCurrentPiece(int tetrominoShape, int rotation) {
         this.currentTetrominoShape = tetrominoShape;
@@ -77,6 +112,7 @@ public class GameController {
     
     //puts the tetromino data into grid, and resets holdingTetromino boolean
     public void lockTetromino() {
+        if (isTSpin()){ isSpin = true; }
         for (int row = 0; row < 4; row++) {
             for (int col = 0; col < 4; col++) {
                 if (currentPieceShape[row][col] != 0) {
@@ -101,6 +137,18 @@ public class GameController {
         pieceX = startCol;
         pieceY = startRow;
         setCurrentPiece(nextShape, 0);
+        isLocked = false;
+        isSpin = false;
+
+        if (isLost()){
+            timer.cancel();
+            try {
+                Thread.sleep(2000);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            board.showGameOver();
+        }
     }
 
     // only takes in 0, 1, 2, 3, so have to mod it when inputting i guess
@@ -123,11 +171,43 @@ public class GameController {
                         setPieceY(newKickY);
                         currentPieceShape = newRotatedShape;
                         currentRotation = targetRotation;
+                        isSpin = true;
                         return;
                     }
                 }
             }
         }
+    }
+
+    private boolean isTSpin(){
+        if (currentTetrominoShape != 3){
+            return false;
+        }
+
+        int centerX = pieceX + 1;
+        int centerY = pieceY + 1;
+
+        int[][] corners = {
+            {-1, -1},
+            {1, -1},
+            {-1, 1},
+            {1, 1}
+        };
+
+        int filledCorners = 0;
+
+        for (int i = 0; i < corners.length; i++) {
+            int checkX = centerX + corners[i][0];
+            int checkY = centerY + corners[i][1];
+            if (checkY >= 0 && checkY < totalRows && checkX >= 0 && checkX < columns) {
+                if (grid[checkY][checkX] != 0) {
+                filledCorners++;
+                }
+            } else {
+                filledCorners++;
+            }
+        }
+        return filledCorners >= 3;
     }
 
     public void newTetromino(){
@@ -139,6 +219,8 @@ public class GameController {
     public void clearLines(){
         int linesCleared = 0;
         int currentRow = totalRows - 1;
+
+        previousHeldTeromino = currentTetrominoShape;
     
         while (currentRow >= 0) {
             boolean lineComplete = true;
@@ -169,6 +251,62 @@ public class GameController {
                 currentRow--;
             }
         }
+
+        totalLinesCleared += linesCleared;
+
+        switch(linesCleared) {
+            case 1:
+                linesClearedText = "SINGLE";
+                score += 100;
+                break;
+            case 2:
+                linesClearedText = "DOUBLE";
+                score += 200;
+                break;
+            case 3:
+                linesClearedText = "TRIPLE";
+                score += 500;
+                break;
+            case 4:
+                linesClearedText = "QUAD";
+                score += 800;
+                break;
+            default:
+                linesClearedText = " ";
+        }
+        delay = getDelayFromLevel((int)(totalLinesCleared/10));
+    }
+
+    public boolean isLost(){
+        for (int i = 0; i < columns; i++){
+            for (int j = 0; j < 3; j++){
+                if (grid[j][i] != 0){
+                    System.out.println("GAME OVER");
+                    score = 0;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void resetGame() {
+
+        for (int i = 0; i < totalRows; i++) {
+            for (int j = 0; j < columns; j++) {
+                grid[i][j] = 0;
+            }
+        }
+    
+ 
+        pieceX = startCol;
+        pieceY = startRow;
+        heldTetromino = -1;
+        holdingTetromino = false;
+        isLocked = false;
+        lockTime = 0;
+
+        setCurrentPiece(bag.getNext(), 0);
     }
 
     // getters
@@ -184,6 +322,7 @@ public class GameController {
 
     public boolean isHoldingTetromino() { return holdingTetromino; };
     public int getHeldTetromino() { return heldTetromino; }
+    public int getPreviousHeldTetromino() { return previousHeldTeromino; }
 
     
     // setters
